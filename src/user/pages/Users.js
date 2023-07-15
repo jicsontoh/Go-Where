@@ -1,7 +1,16 @@
 import React from "react";
+import UserList from "../components/UserList";
+import image from "./user-1.jpg"
 
 const Users = () => {
-    return <h1> User page </h1>
+    const USERS = [{
+        id: "u1",
+        name: "John",
+        placesCount: 5,
+        img: image
+
+    }]
+    return <UserList items={USERS} />
 
 }
 
