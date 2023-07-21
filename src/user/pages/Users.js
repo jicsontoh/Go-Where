@@ -3,7 +3,7 @@ import UserList from "../components/UserList";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
 import { useHttpClient } from "../../shared/hooks/http-hook";
-import image from "./user-1.jpg";
+// import image from "./user-1.jpg";
 
 const Users = () => {
   const { isLoading, error, sendRequest, clearError } = useHttpClient();

@@ -63,7 +63,7 @@ const Auth = () => {
 
     if (isLoginMode) {
       try {
-        await sendRequest(
+        const data = await sendRequest(
           "http://localhost:8080/api/users/login",
           "POST",
           JSON.stringify({
@@ -76,11 +76,11 @@ const Auth = () => {
         );
 
         // setIsError("Login successful!");
-        auth.login();
+        auth.login(data.user.id);
       } catch (err) {}
     } else {
       try {
-        await sendRequest(
+        const data = await sendRequest(
           "http://localhost:8080/api/users/signup",
           "POST",
           JSON.stringify({
@@ -94,7 +94,7 @@ const Auth = () => {
         );
 
         // setIsError("Sign up successful!");
-        auth.login();
+        auth.login(data.user.id);
       } catch (err) {}
     }
   };
