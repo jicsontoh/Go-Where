@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
 import Input from "../../shared/components/FormElements/Input";
 import Button from "../../shared/components/FormElements/Button";
+import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
+import ErrorModal from "../../shared/components/UIElements/ErrorModal";
 import { useForm } from "../../shared/hooks/form-hook";
+import { AuthContext } from "../../shared/context/auth-context";
+import { useHttpClient } from "../../shared/hooks/http-hook";
 import {
   VALIDATOR_REQUIRE,
   VALIDATOR_MINLENGTH,
@@ -11,41 +15,12 @@ import {
 
 import "./PlaceForm.css";
 
-const places = [
-  {
-    id: "p1",
-    title: "Marina Bay Sands",
-    description:
-      "Marina Bay Sands is a destination for those who appreciate luxury. An integrated resort notable for transforming Singapore’s city skyline, it comprises three 55-storey towers of extravagant hotel rooms and luxury suites with personal butler services.",
-    img: "",
-    address: "10 Bayfront Avenue, Singapore 018956",
-    coordinates: {
-      lat: 1.2838,
-      lng: 103.8591,
-    },
-    creatorId: "u1",
-  },
-  {
-    id: "p2",
-    title: "Singapore Flyer",
-    description:
-      "A giant observation wheel that stands amidst the skyscrapers in the Singapore skyline, the Singapore Flyer is the go-to attraction for the most magnificent views of our city.",
-    img: "",
-    address: "30 Raffles Avenue, Singapore 039803",
-    coordinates: {
-      lat: 1.2893,
-      lng: 103.8631,
-    },
-    creatorId: "u2",
-  },
-];
-
 const UpdatePlace = (props) => {
+  const auth = useContext(AuthContext);
+  const { isLoading, error, sendRequest, clearError } = useHttpClient();
   const placeId = useParams().placeId;
-
-  const [isLoading, setIsLoading] = useState(true);
-
-  const foundPlaces = places.find((p) => p.id === placeId);
+  const [loadedPlace, setLoadedPlace] = useState();
+  const history = useNavigate();
 
   const [formState, inputHandler, setFormData] = useForm(
     {
@@ -66,29 +41,44 @@ const UpdatePlace = (props) => {
   );
 
   useEffect(() => {
-    if (foundPlaces) {
-      setFormData(
-        {
-          title: {
-            value: foundPlaces.title,
-            isValid: true,
-          },
-          address: {
-            value: foundPlaces.address,
-            isValid: true,
-          },
-          description: {
-            value: foundPlaces.description,
-            isValid: true,
-          },
-        },
-        true
-      );
-    }
-    setIsLoading(false);
-  }, [setFormData, foundPlaces]);
+    const fetchPlaces = async () => {
+      try {
+        const data = await sendRequest(
+          `http://localhost:8080/api/places/${placeId}`
+        );
+        setLoadedPlace(data.place);
 
-  if (!foundPlaces) {
+        setFormData(
+          {
+            title: {
+              value: data.place.title,
+              isValid: true,
+            },
+            address: {
+              value: data.place.address,
+              isValid: true,
+            },
+            description: {
+              value: data.place.description,
+              isValid: true,
+            },
+          },
+          true
+        );
+      } catch (err) {}
+    };
+    fetchPlaces();
+  }, [sendRequest, placeId, setFormData]);
+
+  if (isLoading) {
+    return (
+      <div className="center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (!loadedPlace && !error) {
     return (
       <div className="center">
         <h2>Cannot find place!</h2>
@@ -96,55 +86,68 @@ const UpdatePlace = (props) => {
     );
   }
 
-  const placeUpdateSubmitHandler = (event) => {
+  const placeUpdateSubmitHandler = async (event) => {
     event.preventDefault();
-    console.log(formState.inputs);
+
+    try {
+      await sendRequest(
+        `http://localhost:8080/api/places/${placeId}`,
+        "PATCH",
+        JSON.stringify({
+          title: formState.inputs.title.value,
+          description: formState.inputs.description.value,
+          address: formState.inputs.address.value,
+        }),
+        {
+          "Content-type": "application/json",
+        }
+      );
+      history("/" + auth.userId + "/places");
+    } catch (err) {}
   };
 
-  if (isLoading) {
-    return (
-      <div className="center">
-        <h2>Loading...</h2>
-      </div>
-    );
-  }
   return (
-    <form className="place-form" onSubmit={placeUpdateSubmitHandler}>
-      <Input
-        id="title"
-        element="input"
-        type="text"
-        label="Title"
-        validators={[VALIDATOR_REQUIRE()]}
-        errorText="Please enter a valid title"
-        onInput={inputHandler}
-        initialValue={formState.inputs.title.value}
-        initialValid={formState.inputs.title.isValid}
-      />
-      <Input
-        id="address"
-        element="input"
-        label="Address"
-        validators={[VALIDATOR_REQUIRE()]}
-        errorText="Please enter a valid address"
-        onInput={inputHandler}
-        initialValue={formState.inputs.address.value}
-        initialValid={formState.inputs.address.isValid}
-      />
-      <Input
-        id="description"
-        element="textarea"
-        label="Description"
-        validators={[VALIDATOR_MINLENGTH(5)]}
-        errorText="Please enter a valid description (min. 5 characters)"
-        onInput={inputHandler}
-        initialValue={formState.inputs.description.value}
-        initialValid={formState.inputs.description.isValid}
-      />
-      <Button type="submit" disabled={!formState.isValid}>
-        Update Place
-      </Button>
-    </form>
+    <React.Fragment>
+      <ErrorModal error={error} onClear={clearError} />
+      {!isLoading && loadedPlace && (
+        <form className="place-form" onSubmit={placeUpdateSubmitHandler}>
+          <Input
+            id="title"
+            element="input"
+            type="text"
+            label="Title"
+            validators={[VALIDATOR_REQUIRE()]}
+            errorText="Please enter a valid title"
+            onInput={inputHandler}
+            initialValue={loadedPlace.title}
+            initialValid={true}
+          />
+          <Input
+            id="address"
+            element="input"
+            label="Address"
+            validators={[VALIDATOR_REQUIRE()]}
+            errorText="Please enter a valid address"
+            onInput={inputHandler}
+            initialValue={loadedPlace.address}
+            initialValid={true}
+          />
+          <Input
+            id="description"
+            element="textarea"
+            label="Description"
+            validators={[VALIDATOR_MINLENGTH(5)]}
+            errorText="Please enter a valid description (min. 5 characters)"
+            onInput={inputHandler}
+            initialValue={loadedPlace.description}
+            initialValid={true}
+          />
+          <Button type="submit" disabled={!formState.isValid}>
+            Update Place
+          </Button>
+        </form>
+      )}
+    </React.Fragment>
   );
 };
 

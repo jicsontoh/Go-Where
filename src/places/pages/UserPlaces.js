@@ -4,9 +4,9 @@ import { useHttpClient } from "../../shared/hooks/http-hook";
 
 import PlaceList from "../components/PlaceList";
 import ErrorModal from "../../shared/components/UIElements/ErrorModal";
-import image from "./mbs-place.jpg";
 import LoadingSpinner from "../../shared/components/UIElements/LoadingSpinner";
-import image2 from "./sg-flyer-place.jpg";
+// import image2 from "./sg-flyer-place.jpg";
+// import image from "./mbs-place.jpg";
 
 const UserPlaces = () => {
   const [loadedPlaces, setLoadedPlaces] = useState();

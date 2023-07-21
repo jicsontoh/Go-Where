@@ -55,7 +55,7 @@ const NewPlace = () => {
           "Content-type": "application/json",
         }
       );
-      history.push("/");
+      history("/");
     } catch (err) {}
   };
 
