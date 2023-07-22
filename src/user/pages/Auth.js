@@ -41,6 +41,7 @@ const Auth = () => {
         {
           ...formState.inputs,
           name: undefined,
+          image: undefined,
         },
         formState.inputs.email.isValid && formState.inputs.password.isValid
       );
@@ -123,12 +124,7 @@ const Auth = () => {
             />
           )}
           {!isLoginMode && (
-            <ImageUpload
-              center
-              id="image"
-              onInput={inputHandler}
-              errorText="Please upload an image"
-            />
+            <ImageUpload center id="image" onInput={inputHandler} />
           )}
           <Input
             element="input"
