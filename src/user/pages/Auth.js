@@ -82,7 +82,7 @@ const Auth = () => {
         );
 
         // setIsError("Login successful!");
-        auth.login(data.user.id);
+        auth.login(data.userId, data.token);
       } catch (err) {}
     } else {
       try {
@@ -99,7 +99,7 @@ const Auth = () => {
         );
 
         // setIsError("Sign up successful!");
-        auth.login(data.user.id);
+        auth.login(data.userId, data.token);
       } catch (err) {}
     }
   };
