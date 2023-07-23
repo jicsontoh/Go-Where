@@ -100,6 +100,7 @@ const UpdatePlace = (props) => {
         }),
         {
           "Content-type": "application/json",
+          Authorization: "Bearer " + auth.token,
         }
       );
       history("/" + auth.userId + "/places");
