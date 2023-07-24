@@ -34,7 +34,7 @@ const PlaceItem = (props) => {
 
     try {
       await sendRequest(
-        `http://localhost:8080/api/places/${props.id}`,
+        process.env.REACT_APP_API_URL + `/api/places/${props.id}`,
         "DELETE",
         null,
         {
@@ -83,7 +83,7 @@ const PlaceItem = (props) => {
           {isLoading && <LoadingSpinner asOverlay />}
           <div className="place-item__image">
             <img
-              src={`http://localhost:8080/${props.image}`}
+              src={process.env.REACT_APP_API_URL + `/${props.image}`}
               alt={props.title}
             />
           </div>
